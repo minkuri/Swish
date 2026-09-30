@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101715">
+  <meta name="turnstile-site-key" content="YOUR_TURNSTILE_SITE_KEY">
+  <title>Swish!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="/game/style.css?v=6">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Swish 首頁">
+        <span class="brand-mark">S<span>!</span></span>
+        <span>SWISH<span class="brand-dot">.</span></span>
+      </a>
+
+      <div class="top-meta">
+        <span class="live-dot"></span>街頭球場・賽季 01
+      </div>
+
+      <button class="login-trigger" id="loginButton" type="button">
+        登入 <span>→</span>
+      </button>
+      <button class="profile" id="profileButton" type="button" aria-label="編輯個人資料">
+        <span class="avatar">🏀</span>
+        <span class="profile-copy">
+          <b id="playerName">街頭新秀</b>
+          <small>Lv. 01 · 新手球員</small>
+        </span>
+        <span class="coin-pill">🪙 <b id="coinDisplay">0</b></span>
+      </button>
+    </header>
+
+    <main class="dashboard">
+      <aside class="left-rail">
+        <section class="welcome">
+          <div class="eyebrow">YOUR COURT, YOUR RULES</div>
+          <h1>準備好<br>投出<span>好手感</span>了嗎？</h1>
+          <p>把握每一球，刷新你的街頭紀錄。</p>
+        </section>
+
+        <section class="panel record-panel">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">PLAYER CARD</span>
+              <h2>個人紀錄</h2>
+            </div>
+            <span class="heading-icon">✦</span>
+          </div>
+          <div class="record-grid">
+            <div class="record-stat">
+              <span>最高分</span>
+              <b id="bestDisplay">0</b>
+              <small>BEST SCORE</small>
+            </div>
+            <div class="record-stat">
+              <span>累計命中</span>
+              <b id="hitsDisplay">0</b>
+              <small>TOTAL MAKES</small>
+            </div>
+          </div>
+          <div class="season-row">
+            <span class="season-icon">🏆</span>
+            <span>
+              <b>本週目標</b>
+              <small>單場得分達到 300 分</small>
+            </span>
+            <span class="progress-label" id="goalProgress">0 / 300</span>
+          </div>
+          <div class="progress-track"><i id="goalBar"></i></div>
+        </section>
+
+        <section class="panel leaderboard">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">TOP PLAYERS</span>
+              <h2>排行榜</h2>
+            </div>
+            <span class="live-tag">LIVE</span>
+          </div>
+          <div class="leader-tabs">
+            <button class="leader-tab active" data-duration="30">30 秒</button>
+            <button class="leader-tab" data-duration="60">60 秒</button>
+            <button class="leader-tab" data-duration="180">180 秒</button>
+          </div>
+          <div id="leaderboardRows">
+            <div class="leader-empty">登入並連接排行榜 API 後，這裡會顯示真實玩家名次。</div>
+          </div>
+        </section>
+
+        <div class="rail-footer">
+          SWISH! STREETBALL CLUB <span>© 2026</span>
+        </div>
+      </aside>
+
+      <section class="game-column">
+        <div class="game-heading">
+          <div>
+            <div class="eyebrow">PICK UP &amp; PLAY</div>
+            <h2>快速投籃挑戰</h2>
+          </div>
+          <div class="round-label">
+            <span class="live-dot"></span>
+            <span id="roundDuration">30 秒賽制</span>
+          </div>
+        </div>
+
+        <div id="stage">
+          <canvas id="c"></canvas>
+          <div class="ov" id="menu">
+            <div class="menu-badge">🏀 &nbsp; STREET MODE</div>
+            <div class="logo">SWISH<span>!</span></div>
+            <div class="sub">
+              <span id="modeDescription">30 秒投籃挑戰</span><br>
+              按住球往上拖曳，瞄準後放手出手<br>
+              <small>連續命中累積 Combo，空心入網 Perfect +50</small>
+            </div>
+            <div class="duration-picker" role="group" aria-label="選擇賽制">
+              <button class="duration-btn active" data-seconds="30">30 秒</button>
+              <button class="duration-btn" data-seconds="60">60 秒</button>
+              <button class="duration-btn" data-seconds="180">180 秒</button>
+            </div>
+            <button id="go" class="primary-btn">開始挑戰 <span>→</span></button>
+            <div class="menu-hint">DRAG UP TO SHOOT</div>
+          </div>
+
+          <div class="ov" id="over" hidden>
+            <div class="menu-badge">SESSION COMPLETE</div>
+            <div class="logo">TIME<span>!</span></div>
+            <div class="big" id="fs">0</div>
+            <div class="tag" id="rec"></div>
+            <div class="sub" id="stat"></div>
+            <div class="coins" id="coinEarned"></div>
+            <button id="again" class="primary-btn">再來一場 <span>→</span></button>
+          </div>
+          <div class="court-caption">
+            <span class="live-dot"></span>THE NEIGHBORHOOD COURT
+          </div>
+        </div>
+
+        <div class="game-tip">
+          <span>⌁</span>拖曳距離越長，投籃力道越大。瞄準籃框，連續進球拿下高分！
+        </div>
+      </section>
+
+      <aside id="shop" class="shop-panel">
+        <div class="shop-head">
+          <div>
+            <div class="eyebrow">MAKE IT YOURS</div>
+            <h2>球場商店</h2>
+          </div>
+          <span class="shop-bag">⌑</span>
+        </div>
+        <p class="shop-desc">換上你的風格，讓每次出手都更有型。</p>
+        <div class="shop-balance">
+          <span>可用金幣</span>
+          <b>🪙 <span id="shopCoins">0</span></b>
+        </div>
+        <div class="shop-tabs">
+          <button class="tab-btn active" data-cat="courts">場地</button>
+          <button class="tab-btn" data-cat="balls">籃球</button>
+          <button class="tab-btn" data-cat="hoops">籃框</button>
+        </div>
+        <div class="shop-list" id="shopList" aria-live="polite">
+          <div class="shop-item selected">
+            <span class="shop-art court-classic"><span class="art-emoji">🏟️</span></span>
+            <span class="shop-item-info">
+              <span class="shop-item-name">經典木地板</span>
+              <span class="shop-item-detail">暖木地板・經典主場</span>
+              <span class="shop-item-cost">已擁有</span>
+            </span>
+            <span class="shop-action">使用中</span>
+          </div>
+          <div class="shop-item locked">
+            <span class="shop-art court-night"><span class="art-emoji">🌃</span></span>
+            <span class="shop-item-info">
+              <span class="shop-item-name">夜間球場</span>
+              <span class="shop-item-detail">霓虹夜色・城市球場</span>
+              <span class="shop-item-cost">🪙 300</span>
+            </span>
+            <span class="shop-action">解鎖</span>
+          </div>
+          <div class="shop-item locked">
+            <span class="shop-art court-beach"><span class="art-emoji">🌴</span></span>
+            <span class="shop-item-info">
+              <span class="shop-item-name">海灘球場</span>
+              <span class="shop-item-detail">海風沙灘・度假球場</span>
+              <span class="shop-item-cost">🪙 500</span>
+            </span>
+            <span class="shop-action">解鎖</span>
+          </div>
+          <div class="shop-item locked">
+            <span class="shop-art court-galaxy"><span class="art-emoji">🌌</span></span>
+            <span class="shop-item-info">
+              <span class="shop-item-name">銀河球場</span>
+              <span class="shop-item-detail">星雲地板・宇宙球場</span>
+              <span class="shop-item-cost">🪙 800</span>
+            </span>
+            <span class="shop-action">解鎖</span>
+          </div>
+        </div>
+        <div class="shop-foot"><span>✦</span>每場得分都能兌換金幣</div>
+      </aside>
+    </main>
+  </div>
+
+  <section
+    class="auth-screen"
+    id="authScreen"
+    hidden
+    aria-modal="true"
+    role="dialog"
+    aria-labelledby="authTitle"
+  >
+    <div class="auth-card">
+      <button class="close-auth" id="closeAuth" aria-label="關閉登入視窗">×</button>
+      <a class="brand auth-brand" href="#">
+        <span class="brand-mark">S<span>!</span></span>
+        <span>SWISH<span class="brand-dot">.</span></span>
+      </a>
+      <div class="eyebrow">JOIN THE COURT</div>
+      <h2 id="authTitle">回到球場</h2>
+      <p class="auth-lead">使用帳號登入，或建立你的球員帳戶。</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-auth="login">登入</button>
+        <button class="auth-tab" data-auth="register">註冊</button>
+      </div>
+      <form id="authForm">
+        <label>
+          帳號
+          <input name="account" autocomplete="username" minlength="3" maxlength="32" required placeholder="輸入帳號">
+        </label>
+        <label>
+          密碼
+          <input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="至少 8 個字元">
+        </label>
+        <div class="register-fields" id="registerFields" hidden>
+          <label>
+            使用者名稱
+            <input name="username" maxlength="24" placeholder="之後可在個人檔案修改">
+          </label>
+          <label>
+            你來自哪裡？
+            <select name="region">
+                <option value="">選擇地區（可不填）</option>
+                <option>基隆</option>
+                <option>台北</option>
+                <option>桃園</option>
+                <option>新竹</option>
+                <option>宜蘭</option>
+                <option>苗栗</option>
+                <option>花蓮</option>
+                <option>台中</option>
+                <option>彰化</option>
+                <option>南投</option>
+                <option>雲林</option>
+                <option>嘉義</option>
+                <option>台東</option>
+                <option>台南</option>
+                <option>高雄</option>
+                <option>屏東</option>
+                <option>澎湖</option>
+                <option>金門</option>
+                <option>連江</option>
+            </select>
+          </label>
+          <div class="captcha-wrap">
+            <div id="turnstileWidget"></div>
+            <small class="captcha-note">
+              註冊前需完成 Cloudflare Turnstile。網站金鑰未設定時，註冊會先停用。
+            </small>
+          </div>
+        </div>
+        <p class="auth-message" id="authMessage" role="status"></p>
+        <button class="primary-btn auth-submit" id="authSubmit" type="submit">
+          登入球場 <span>→</span>
+        </button>
+      </form>
+      <button class="guest-button" id="guestButton" type="button">先以訪客試玩</button>
+      <p class="auth-footnote">目前登入 API 尚未設定時，可以訪客模式體驗遊戲。</p>
+    </div>
+  </section>
+
+  <section
+    class="auth-screen"
+    id="profileScreen"
+    hidden
+    aria-modal="true"
+    role="dialog"
+    aria-labelledby="profileTitle"
+  >
+    <div class="auth-card profile-card">
+      <button class="close-auth" id="closeProfile" aria-label="關閉">×</button>
+      <div class="eyebrow">PLAYER PROFILE</div>
+      <h2 id="profileTitle">編輯球員資料</h2>
+      <form id="profileForm">
+        <label>
+          使用者名稱（可修改）
+          <input name="username" maxlength="24" required>
+        </label>
+        <label>
+          你來自哪裡？
+          <select name="region">
+            <option value="">不公開</option>
+            <option>基隆</option>
+            <option>台北</option>
+            <option>桃園</option>
+            <option>新竹</option>
+            <option>宜蘭</option>
+            <option>苗栗</option>
+            <option>花蓮</option>
+            <option>台中</option>
+            <option>彰化</option>
+            <option>南投</option>
+            <option>雲林</option>
+            <option>嘉義</option>
+            <option>台東</option>
+            <option>台南</option>
+            <option>高雄</option>
+            <option>屏東</option>
+            <option>澎湖</option>
+            <option>金門</option>
+            <option>連江</option>
+          </select>
+        </label>
+        <p class="auth-message" id="profileMessage" role="status"></p>
+        <button class="primary-btn auth-submit" type="submit">
+          儲存資料 <span>→</span>
+        </button>
+      </form>
+      <button class="guest-button" id="logoutButton" type="button">登出</button>
+    </div>
+  </section>
+
+  <div class="runtime-error" id="runtimeError" role="alert" hidden></div>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onSwishTurnstileReady&amp;render=explicit" async defer></script>
+  <script src="/game/game.js?v=7"></script>
+</body>
+</html>
