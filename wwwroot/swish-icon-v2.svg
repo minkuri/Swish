@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect x="3" y="3" width="58" height="58" rx="18" fill="#d1f36a" transform="rotate(-5 32 32)"/>
-  <text x="11" y="47" fill="#1b2414" font-family="Arial, sans-serif" font-size="43" font-weight="900">S</text>
-  <text x="43" y="48" fill="#fa8d48" font-family="Arial, sans-serif" font-size="27" font-weight="900">!</text>
+  <path d="M40 18c-5-5-15-6-20-2-6 5-4 12 4 15l12 4c9 3 10 12 3 17-7 5-19 3-24-2" fill="none" stroke="#1b2414" stroke-linecap="round" stroke-width="6.5"/>
+  <path d="m49 19-2 20" fill="none" stroke="#fa8d48" stroke-linecap="round" stroke-width="6"/>
+  <circle cx="46.5" cy="49" r="3.2" fill="#fa8d48"/>
 </svg>
