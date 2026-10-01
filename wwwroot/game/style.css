@@ -1065,6 +1065,11 @@ button:focus-visible {
     margin: -4px 0 13px;
 }
 
+.result-duration-picker {
+    width: min(100%, 280px);
+    margin: 12px 0 10px;
+}
+
 .duration-btn,
 .leader-tab,
 .auth-tab {
@@ -1320,4 +1325,57 @@ button:focus-visible {
 
 .runtime-error[hidden] {
     display: none;
+}
+
+/* Small motion cues for game feedback and navigation. */
+button,
+.shop-item,
+.panel,
+.rank-row {
+    transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease,
+        box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.auth-screen:not([hidden]) .auth-card {
+    animation: card-enter 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.toast {
+    position: fixed;
+    z-index: 110;
+    left: 50%;
+    bottom: 22px;
+    max-width: min(92vw, 420px);
+    padding: 11px 16px;
+    border: 1px solid rgba(209, 243, 106, 0.35);
+    border-radius: 12px;
+    background: #202a24;
+    color: var(--text);
+    font-size: 12px;
+    box-shadow: 0 14px 40px #0008;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 12px);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+@keyframes card-enter {
+    from { opacity: 0; transform: translateY(10px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

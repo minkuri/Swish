@@ -1,27 +1,61 @@
-# Swish 前端與後端串接說明
+# Swish 部署與資料庫設定
 
-目前這個目錄只包含前端。頁面會呼叫下列 ASP.NET Core API；登入、資料庫寫入、Turnstile 驗證、頻率限制與遊戲分數驗證仍需由後端實作。
+Swish 現在使用 ASP.NET Core Identity、EF Core 與 PostgreSQL。帳號登入、玩家資料、賽事紀錄、排行榜及道具購買 API 已接入；遊戲頁使用安全 Cookie 與 API 同步資料。登入 API 不要求 Email。
 
-## API 合約
+## 初次建立資料庫
 
-- `GET /api/player/me`：登入後回傳 `{ player: { username, region, coins, bestScore, totalHits } }`。未登入回傳 401。
-- `POST /api/auth/register`：接收 `{ account, password, username, region, turnstileToken }`。帳號是登入識別；username 是公開顯示名稱，可修改。不收 Email。
-- `POST /api/auth/login`：接收 `{ account, password }`，成功後建議用安全的 HttpOnly、Secure、SameSite Cookie 維持登入。
-- `POST /api/auth/logout`：清除登入 Cookie。
-- `PATCH /api/player/profile`：接收 `{ username, region }`，由伺服器依登入 Cookie 更新目前玩家。
-- `GET /api/leaderboard?duration=30|60|180`：回傳 `{ entries: [{ username, region, score, avatar, isCurrentPlayer }] }`，每個賽制分別查詢最高成績。
-- `POST /api/games/complete`：接收 `{ duration, score, hits, shots, maxCombo }`。伺服器驗證賽制、玩家與有效成績，更新該賽制紀錄，再回傳 `{ player: { username, region, coins, bestScore, totalHits } }`。
+專案使用 `ConnectionStrings:DefaultConnection`。請先確認本機 PostgreSQL 服務正在執行，並建立連線字串指定的資料庫。若資料庫名稱為 `swish`，可用：
 
-所有登入端點都應使用 HTTPS。密碼只能由伺服器使用 ASP.NET Core Identity 或安全的密碼雜湊方案保存，不能存明文，也不要把 DB 連線字串或 Turnstile secret 放到前端。註冊端點應限制來源頻率、並在伺服器呼叫 Cloudflare Siteverify 驗證 `turnstileToken`；僅在網頁上勾選核取方塊並不能防機器人或 DDoS。
+```sh
+createdb swish
+```
 
-## 設定 Cloudflare Turnstile
+如果 connection string 尚未設好，請用 .NET User Secrets 儲存，不要把密碼放在 Git 追蹤的設定檔：
 
-在 Cloudflare 建立 Turnstile Widget 後，把公開的 Site Key 設定到 `index.html` 的 `meta[name="turnstile-site-key"]`。Secret Key 只放在 ASP.NET Core 的環境變數或 Secret Manager。後端收到註冊請求時，必須向 Cloudflare Siteverify 驗證 token、檢查 hostname 與成功狀態，並設置 IP／帳號頻率限制。大型 DDoS 還需要 CDN/WAF 與伺服器層防護；Turnstile 本身不會擋住所有流量攻擊。
+```sh
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=swish;Username=YOUR_DB_USER;Password=YOUR_DB_PASSWORD"
+```
 
-## 建議資料表
+套用 Identity、玩家欄位、賽事與商店資料表遷移：
 
-- `Player`：Identity 使用者 ID、唯一帳號、使用者名稱、地區、金幣與累計統計。
-- `GameRecord`：玩家 ID、賽制秒數、分數、命中／投籃數、最高 Combo、建立時間；為玩家與賽制建立查詢索引。
-- `PlayerItem`：玩家 ID、商品 ID、購買時間。
+```sh
+dotnet ef database update
+```
 
-不要信任瀏覽器送來的玩家 ID、金幣或獎勵。以登入身分識別玩家，由伺服器計算獎勵並在交易中更新錢包與紀錄。排行榜展示資料已移除；API 未連接時會顯示空狀態。
+在專案目錄 `Swish` 執行上述命令。遷移會建立 Identity 使用者資料表、`GameRecords` 和 `PlayerItems`。新註冊玩家獲得 500 枚起始金幣；預設經典道具免費並視為已擁有。
+
+## 人機驗證設定
+
+開發環境已使用 Cloudflare 官方測試金鑰，讓本機註冊流程可直接操作；這組測試金鑰會自動通過驗證，**只可用於 Development**，伺服器在其他環境會拒絕啟動。正式環境請到 Cloudflare 建立自己的 Turnstile Widget，並把 Site Key 和 Secret Key 分別存入 User Secrets 或部署環境變數：
+
+```sh
+dotnet user-secrets set "Turnstile:SiteKey" "YOUR_TURNSTILE_SITE_KEY"
+dotnet user-secrets set "Turnstile:SecretKey" "YOUR_TURNSTILE_SECRET_KEY"
+dotnet user-secrets set "Turnstile:HostName" "your-real-domain.example"
+```
+
+正式環境必須設定 HostName 為正式網域；Development 使用測試金鑰時不檢查 HostName。Site Key 由 `/api/public-config` 提供給瀏覽器；Secret Key 只留在伺服器。伺服器會向 Cloudflare Siteverify 驗證註冊 token，驗證失敗時不會建立帳號。登入本身不需要驗證碼或 Email。Cloudflare 的測試金鑰僅供開發整合使用；正式環境必須換成自己的 Widget 金鑰。
+
+ASP.NET Core 也對登入、註冊、成績提交設置 IP 頻率限制，Identity 會鎖定連續登入失敗的帳號。這些措施不能單獨防住大型 DDoS，正式上線仍應在反向代理或 Cloudflare WAF 設定流量防護。反向代理部署時，請只信任實際代理送來的 forwarded headers，否則 IP 限流無法正確分辨訪客。
+
+## 已提供的 API
+
+- `GET /api/public-config`：公開的 Turnstile Site Key。
+- `POST /api/auth/register`：`{ account, password, username, region, turnstileToken }`。帳號是登入名稱，使用者名稱是可修改的公開名稱；不收 Email。成功後建立登入 Cookie。
+- `POST /api/auth/login`：`{ account, password }`。使用 Identity 密碼雜湊與登入失敗鎖定。
+- `POST /api/auth/logout`：撤銷目前登入 Cookie。
+- `GET /api/player/me`：目前玩家資料與商店庫存。
+- `PATCH /api/player/profile`：`{ username, region }`。
+- `GET /api/leaderboard?duration=30|60|180`：各賽制每位玩家的最高分前 20 名。
+- `POST /api/games/complete`：`{ duration, score, hits, shots, maxCombo }`；伺服器驗證欄位與合理範圍，寫入紀錄並依分數計算金幣。
+- `GET /api/shop/catalog`：商店商品目錄；前端用此 API 同步商品名稱和價格。
+- `GET /api/shop/inventory`：目前玩家的金幣、持有道具和裝備。
+- `POST /api/shop/purchase`：`{ category, itemId }`。伺服器確認價格、餘額、所有權，再同時扣款與裝備。
+
+資料庫不接受瀏覽器指定玩家 ID、金幣或商品價格。密碼只由 Identity 雜湊保存，Cookie 使用 HttpOnly、Secure 與 SameSite 設定。客戶端的遊戲分數仍不能視為完全防作弊；若要競技級驗證，需要伺服器簽發賽事 session 並驗證投籃事件或遊戲回放。
+
+## 資料表
+
+- `AspNetUsers`：Identity 帳號、顯示名稱、地區、金幣、個人統計與目前裝備。
+- `GameRecords`：玩家、賽制秒數、分數、命中數、出手數、Combo、獲得金幣與時間。
+- `PlayerItems`：玩家擁有的場地、籃球和籃框道具。

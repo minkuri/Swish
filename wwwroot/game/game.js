@@ -209,8 +209,9 @@ const unlockedMap = {
 };
 
 function renderShop() {
-    document.getElementById("coinDisplay").textContent = coins.toLocaleString();
-    document.getElementById("shopCoins").textContent = coins.toLocaleString();
+    const coinLabel = coins >= 2_147_483_647 ? "∞" : coins.toLocaleString();
+    document.getElementById("coinDisplay").textContent = coinLabel;
+    document.getElementById("shopCoins").textContent = coinLabel;
     best = +(safeStorage.get("hw_best_" + duration) || (duration === 30 ? safeStorage.get("hw_best") : 0)) || 0;
     document.getElementById("bestDisplay").textContent = best.toLocaleString();
     document.getElementById("hitsDisplay").textContent = totalHits.toLocaleString();
@@ -269,7 +270,22 @@ function renderShop() {
             </span>
             <span class="shop-action">${action}</span>
         `;
-        el.onclick = () => {
+        el.onclick = async () => {
+            if (authenticated) {
+                try {
+                    const result = await api("/api/shop/purchase", {
+                        method: "POST",
+                        body: JSON.stringify({ category: activeTab, itemId: id }),
+                    });
+                    if (result.player) applyPlayer(result.player);
+                    applyInventory(result.inventory);
+                    showToast(equipped ? "已裝備 " + item.name : owned ? "已切換至 " + item.name : "解鎖成功：" + item.name);
+                } catch (error) {
+                    showToast(error.message);
+                }
+                return;
+            }
+
             if (owned) {
                 selected[activeTab] = id;
                 safeStorage.set("hw_" + activeTab.slice(0, -1), id);
@@ -277,9 +293,12 @@ function renderShop() {
                 coins -= item.cost;
                 unlockedIds.push(id);
                 selected[activeTab] = id;
-                try { safeStorage.set("hw_coins", coins); } catch (e) {}
+                safeStorage.set("hw_coins", coins);
                 safeStorage.set("hw_unlocked_" + activeTab, JSON.stringify(unlockedIds));
                 safeStorage.set("hw_" + activeTab.slice(0, -1), id);
+                showToast("解鎖成功：" + item.name);
+            } else {
+                showToast("金幣不足，完成投籃賽事即可賺取金幣。");
             }
             renderShop();
         };
@@ -341,6 +360,14 @@ function mountTurnstile() {
 }
 window.onSwishTurnstileReady = mountTurnstile;
 window.addEventListener("load", mountTurnstile);
+loadCatalog();
+api("/api/public-config")
+    .then((config) => {
+        const siteKey = document.querySelector('meta[name="turnstile-site-key"]');
+        if (siteKey && config.turnstileSiteKey) siteKey.content = config.turnstileSiteKey;
+        if (authMode === "register") mountTurnstile();
+    })
+    .catch(() => {});
 document.querySelectorAll(".auth-tab").forEach((button) => button.addEventListener("click", () => setAuthMode(button.dataset.auth)));
 authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -361,20 +388,93 @@ authForm.addEventListener("submit", async (event) => {
         authScreen.hidden = true;
         document.getElementById("loginButton").hidden = true;
         applyPlayer(currentPlayer);
+        loadInventory();
         loadLeaderboard();
-    } catch (error) { authMessage.textContent = error.message; }
-    finally { submit.disabled = false; }
+    } catch (error) {
+        authMessage.textContent = error.message;
+        if (authMode === "register") {
+            turnstileToken = "";
+            if (turnstileWidgetId !== null && window.turnstile) {
+                window.turnstile.reset(turnstileWidgetId);
+            }
+        }
+    } finally {
+        submit.disabled = false;
+    }
 });
 document.getElementById("guestButton").addEventListener("click", () => { authenticated = false; authScreen.hidden = true; loadLeaderboard(); });
 document.getElementById("loginButton").addEventListener("click", () => showAuth("login"));
 document.getElementById("closeAuth").addEventListener("click", () => { authScreen.hidden = true; });
 function applyPlayer(player) {
+    if (!player) return;
     currentPlayer = player;
-    document.getElementById("playerName").textContent = player.username || player.displayName || safeStorage.get("swish_username") || "球員";
+    document.getElementById("playerName").textContent =
+        player.username || player.displayName || safeStorage.get("swish_username") || "球員";
     if (Number.isFinite(+player.coins)) coins = +player.coins;
     if (Number.isFinite(+player.bestScore)) best = +player.bestScore;
     if (Number.isFinite(+player.totalHits)) totalHits = +player.totalHits;
     renderShop();
+}
+
+async function loadCatalog() {
+    try {
+        const result = await api("/api/shop/catalog");
+        for (const item of result.items || []) {
+            const category = SHOP_CATS[item.category];
+            if (!category?.[item.id]) continue;
+            category[item.id].name = item.name;
+            category[item.id].cost = item.cost;
+        }
+        renderShop();
+    } catch (_) {
+        // Keep the local catalog available when the API is temporarily offline.
+    }
+}
+
+async function loadInventory() {
+    if (!authenticated) return;
+    try {
+        const result = await api("/api/player/me");
+        applyPlayer(result.player);
+        applyInventory(result.inventory);
+        applyBestScores(result.bestScores);
+    } catch (error) {
+        showToast(error.message);
+    }
+}
+
+function applyBestScores(scores) {
+    if (!scores) return;
+    for (const seconds of [30, 60, 180]) {
+        if (Number.isFinite(+scores[seconds])) {
+            safeStorage.set("hw_best_" + seconds, scores[seconds]);
+        }
+    }
+    renderShop();
+}
+
+function applyInventory(inventory) {
+    if (!inventory) return;
+    if (Number.isFinite(+inventory.coins)) coins = +inventory.coins;
+    for (const category of ["courts", "balls", "hoops"]) {
+        if (Array.isArray(inventory.owned?.[category])) {
+            unlockedMap[category] = inventory.owned[category];
+        }
+        if (inventory.equipped?.[category]) {
+            selected[category] = inventory.equipped[category];
+        }
+    }
+    renderShop();
+}
+
+let toastTimer;
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add("visible");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("visible"), 2800);
 }
 
 document.getElementById("profileButton").addEventListener("click", () => {
@@ -443,7 +543,12 @@ function escapeText(value) { const node = document.createElement("span"); node.t
 async function submitGameResult() {
     if (!authenticated) return;
     try { const result = await api("/api/games/complete", { method: "POST", body: JSON.stringify({ duration, score, hits, shots, maxCombo }) });
-        applyPlayer(result.player || currentPlayer); loadLeaderboard();
+        applyPlayer(result.player || currentPlayer);
+        if (result.player) coins = result.player.coins;
+        applyBestScores(result.bestScores);
+        showToast("賽事紀錄已儲存，獲得 " + (result.coinsEarned || 0) + " 金幣！");
+        renderShop();
+        loadLeaderboard();
     } catch (error) { console.warn("Game result was not saved:", error.message); }
 }
 
@@ -451,7 +556,7 @@ document.querySelectorAll(".duration-btn").forEach((button) => button.addEventLi
     duration = +button.dataset.seconds;
     leaderDuration = duration;
     document.querySelectorAll(".leader-tab").forEach((b) => b.classList.toggle("active", +b.dataset.duration === leaderDuration));
-    document.querySelectorAll(".duration-btn").forEach((b) => b.classList.toggle("active", b === button));
+    document.querySelectorAll(".duration-btn").forEach((b) => b.classList.toggle("active", +b.dataset.seconds === duration));
     time = duration;
     document.getElementById("modeDescription").textContent = duration + " 秒投籃挑戰";
     document.getElementById("roundDuration").textContent = duration + " 秒賽制";
@@ -466,7 +571,10 @@ api("/api/player/me").then((result) => {
     const player = result.player || result;
     if (!player || (!player.username && player.coins == null && !player.id)) throw new Error("尚未登入");
     authenticated = true; applyPlayer(player); authScreen.hidden = true;
-    document.getElementById("loginButton").hidden = true; loadLeaderboard();
+    document.getElementById("loginButton").hidden = true;
+    if (result.inventory) applyInventory(result.inventory);
+    applyBestScores(result.bestScores);
+    loadLeaderboard();
 }).catch(() => { /* 訪客仍可遊玩；登入視窗由右上角按鈕開啟 */ });
 
 /* =========================================================

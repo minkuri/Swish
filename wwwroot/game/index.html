@@ -12,7 +12,7 @@
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet"
   >
-  <link rel="stylesheet" href="/game/style.css?v=6">
+  <link rel="stylesheet" href="/game/style.css?v=7">
 </head>
 <body>
   <div class="app-shell">
@@ -139,6 +139,11 @@
             <div class="tag" id="rec"></div>
             <div class="sub" id="stat"></div>
             <div class="coins" id="coinEarned"></div>
+            <div class="duration-picker result-duration-picker" role="group" aria-label="更換下一場賽制">
+              <button class="duration-btn" data-seconds="30">30 秒</button>
+              <button class="duration-btn" data-seconds="60">60 秒</button>
+              <button class="duration-btn" data-seconds="180">180 秒</button>
+            </div>
             <button id="again" class="primary-btn">再來一場 <span>→</span></button>
           </div>
           <div class="court-caption">
@@ -240,7 +245,7 @@
         </label>
         <label>
           密碼
-          <input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="至少 8 個字元">
+          <input name="password" type="password" autocomplete="current-password" minlength="8" pattern=".*[0-9].*" required placeholder="至少 8 個字元">
         </label>
         <div class="register-fields" id="registerFields" hidden>
           <label>
@@ -340,8 +345,9 @@
     </div>
   </section>
 
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="runtime-error" id="runtimeError" role="alert" hidden></div>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onSwishTurnstileReady&amp;render=explicit" async defer></script>
-  <script src="/game/game.js?v=7"></script>
+  <script src="/game/game.js?v=10"></script>
 </body>
 </html>
