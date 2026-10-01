@@ -109,9 +109,13 @@ let scale = 1;
 function fit() {
     const dpr = window.devicePixelRatio || 1;
     const mobile = innerWidth <= 760;
-    const availableW = mobile ? innerWidth - 32 : innerWidth - 460;
+    const availableW = mobile
+        ? Math.max(240, stage.parentElement.clientWidth)
+        : innerWidth - 460;
     const availableH = mobile ? innerHeight - 240 : innerHeight - 190;
-    scale = Math.max(0.38, Math.min(availableW / W, availableH / H, 1.12) * 0.98);
+    const portraitMobile = mobile && innerHeight >= innerWidth;
+    const heightScale = portraitMobile ? 1.12 : availableH / H;
+    scale = Math.max(0.38, Math.min(availableW / W, heightScale, 1.12) * 0.98);
 
     stage.style.width = W * scale + "px";
     stage.style.height = H * scale + "px";
