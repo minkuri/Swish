@@ -5,16 +5,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (string.IsNullOrWhiteSpace(connectionString))
+if (string.IsNullOrWhiteSpace(configuredConnectionString))
 {
     throw new InvalidOperationException(
         "ConnectionStrings:DefaultConnection is missing. Configure it with user-secrets or an environment variable.");
 }
 
+var connectionString = NormalizePostgresConnectionString(configuredConnectionString);
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -445,6 +447,53 @@ app.MapPost("/api/shop/purchase", async (
     .RequireRateLimiting("shop");
 
 app.Run();
+
+static string NormalizePostgresConnectionString(string value)
+{
+    if (!value.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
+        && !value.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+    {
+        return value;
+    }
+
+    if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+    {
+        throw new InvalidOperationException("ConnectionStrings:DefaultConnection must be a valid PostgreSQL connection string or URI.");
+    }
+
+    var credentials = uri.UserInfo.Split(':', 2);
+    if (credentials.Length != 2 || string.IsNullOrWhiteSpace(uri.Host))
+    {
+        throw new InvalidOperationException("The PostgreSQL URI must include a username, password, and host.");
+    }
+
+    var parsed = new NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.IsDefaultPort ? 5432 : uri.Port,
+        Database = Uri.UnescapeDataString(uri.AbsolutePath.Trim('/')),
+        Username = Uri.UnescapeDataString(credentials[0]),
+        Password = Uri.UnescapeDataString(credentials[1]),
+        SslMode = SslMode.Require,
+    };
+
+    foreach (var pair in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+    {
+        var parts = pair.Split('=', 2);
+        var key = Uri.UnescapeDataString(parts[0]).Replace('_', '-').ToLowerInvariant();
+        var queryValue = parts.Length == 2 ? Uri.UnescapeDataString(parts[1]) : string.Empty;
+        if (key == "sslmode")
+        {
+            parsed["SSL Mode"] = queryValue;
+        }
+        else if (key == "channel-binding")
+        {
+            parsed["Channel Binding"] = queryValue;
+        }
+    }
+
+    return parsed.ConnectionString;
+}
 
 static string GetClientKey(HttpContext context) =>
     context.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "unknown-client";

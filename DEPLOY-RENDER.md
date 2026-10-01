@@ -21,7 +21,7 @@
 
 1. 在 Render Dashboard 選 **New → Blueprint**，連接 Swish GitHub repository。
 2. Render 會讀取根目錄的 `render.yaml` 並建立 Web Service。若畫面要求未同步的環境變數，照下方項目填入；若服務先建立完成，前往 **Environment** 設定後再重新部署。
-3. 填入 `ConnectionStrings__DefaultConnection`：使用 Neon 的 Npgsql/.NET 連線字串。
+3. 填入 `ConnectionStrings__DefaultConnection`：可使用 Neon 的 Npgsql/.NET 連線字串，或 Neon 提供的 `postgresql://...` URI。程式會自動將 PostgreSQL URI 轉成 Npgsql 格式。
 4. 確認 `ASPNETCORE_ENVIRONMENT` 是 `Production`，`Database__ApplyMigrations` 是 `true`。
 
 資料庫連線成功後，應用程式會在啟動時自動套用已提交的 EF Core migrations，建立所需資料表。
