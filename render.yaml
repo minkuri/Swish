@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: swish-showcase
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/public-config
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:10000
+      - key: Database__ApplyMigrations
+        value: "true"
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Turnstile__SiteKey
+        sync: false
+      - key: Turnstile__SecretKey
+        sync: false
+      - key: Turnstile__HostName
+        sync: false

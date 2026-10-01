@@ -1,0 +1,11 @@
+.git
+.vs
+.idea
+bin
+obj
+**/bin
+**/obj
+appsettings.Development.json
+*.user
+*.suo
+*.DS_Store
