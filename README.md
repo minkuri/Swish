@@ -1,5 +1,5 @@
 # 1. 網站建置說明
-Swish 是一個由 ASP.NET Core 提供前後端服務的網站。遊戲介面利用 HTML、CSS、JavaScript 和 Canvas 製作；伺服器用 C# 處理帳號、成績、金幣與商店資料，並存進 PostgreSQL。
+Swish 是一個由多平台多模型 AI 協作，利用 ASP.NET Core 提供前後端服務的網站。遊戲介面利用 HTML、CSS、JavaScript 和 Canvas 製作；伺服器用 C# 處理帳號、成績、金幣與商店資料，並存進 PostgreSQL。
 
 ## 採用 GitOps 自動化部署：
 
