@@ -982,7 +982,7 @@ function step(dt) {
    繪圖：場地
    ========================================================= */
 function drawText(text, x, y, size, color, align) {
-    ctx.font = "900 " + (size * 1.3) + "px system-ui, 'Noto Sans TC', sans-serif";
+    ctx.font = "900 " + (size * 1.15) + "px system-ui, 'Noto Sans TC', sans-serif";
     ctx.textAlign = align || "center";
     ctx.fillStyle = color;
     ctx.fillText(text, x, y);
