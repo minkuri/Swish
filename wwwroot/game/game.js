@@ -348,7 +348,7 @@ function setAuthMode(mode) {
     document.querySelectorAll(".auth-tab").forEach((button) => button.classList.toggle("active", button.dataset.auth === mode));
     registerFields.hidden = mode !== "register";
     authForm.elements.password.autocomplete = mode === "register" ? "new-password" : "current-password";
-    document.getElementById("authSubmit").innerHTML = (mode === "register" ? "建立帳戶" : "登入球場") + " <span>→</span>";
+    document.getElementById("authSubmit").innerHTML = (mode === "register" ? "建立帳戶" : "登入球場");
     authMessage.textContent = "";
     turnstileToken = "";
     if (mode === "register") mountTurnstile();

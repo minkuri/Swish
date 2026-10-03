@@ -83,10 +83,11 @@ button {
     font-size: 24.15px;
     letter-spacing: -0.08em;
     transform: rotate(-5deg);
+    margin-right: -7px;
+    margin-top: 10px;
 }
 
-.brand-mark span,
-.brand-dot {
+.brand-mark span {
     color: var(--orange);
 }
 
@@ -103,7 +104,17 @@ button {
     border-radius: 50%;
     background: var(--lime);
     box-shadow: 0 0 10px #d1f36a88;
-    margin-right: 7px;
+    margin-right: 5px;
+}
+
+.brand-live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 10px #d1f36a88;
+    margin-left: 10px;
 }
 
 .profile {
@@ -850,11 +861,9 @@ button:focus-visible {
 
 .shop-foot {
     flex: none;
-    padding-top: 10px;
-    margin-top: 9px;
-    border-top: 1px solid var(--line);
-    color: #97a18f;
-    font-size: 10.35px;
+    margin-top: 5px;
+    color: #e5e5e5;
+    font-size: 12px;
 }
 
 .shop-foot span {
