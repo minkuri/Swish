@@ -275,13 +275,18 @@ app.MapPatch("/api/player/profile", async (
 
     var displayName = request.Username?.Trim() ?? string.Empty;
     var region = request.Region?.Trim() ?? string.Empty;
-    if (displayName.Length is < 1 or > 24 || region.Length > 80)
+    if (displayName.Length is < 1 or > 24 || region.Length > 80
+        || request.AvatarId is not null && !IsValidAvatarId(request.AvatarId))
     {
-        return Results.BadRequest(new { message = "使用者名稱需為 1–24 字，地區最多 80 字。" });
+        return Results.BadRequest(new { message = "使用者名稱需為 1–24 字，地區最多 80 字，頭像需為有效選項。" });
     }
 
     user.DisplayName = displayName;
     user.Region = region;
+    if (request.AvatarId is not null)
+    {
+        user.AvatarId = request.AvatarId;
+    }
     var result = await userManager.UpdateAsync(user);
     if (!result.Succeeded)
     {
@@ -313,6 +318,7 @@ app.MapGet("/api/leaderboard", async (
             {
                 user.DisplayName,
                 user.Region,
+                user.AvatarId,
                 best.Score,
                 user.Id,
             })
@@ -325,7 +331,7 @@ app.MapGet("/api/leaderboard", async (
         row.DisplayName,
         row.Region,
         row.Score,
-        "🏀",
+        row.AvatarId,
         row.Id == currentUserId));
 
     return Results.Ok(new { entries });
@@ -503,6 +509,9 @@ static bool IsValidAccount(string account) =>
     && account.All(character => char.IsAsciiLetterOrDigit(character)
         || character is '_' or '.' or '-');
 
+static bool IsValidAvatarId(string avatarId) =>
+    avatarId is "rookie" or "captain" or "lightning" or "ace" or "night";
+
 static bool IsUnlimitedTestAccount(string account, IHostEnvironment environment, IConfiguration configuration) =>
     environment.IsDevelopment()
     && !string.IsNullOrWhiteSpace(configuration["TestAccount:Account"])
@@ -513,6 +522,7 @@ static PlayerResponse ToPlayerResponse(ApplicationUser user) => new(
     user.UserName ?? string.Empty,
     user.DisplayName,
     user.Region,
+    user.AvatarId,
     user.Coins,
     user.BestScore,
     user.TotalHits,
@@ -607,10 +617,10 @@ static async Task<bool> VerifyTurnstileAsync(
 
 public sealed record RegisterRequest(string? Account, string? Password, string? Username, string? Region, string? TurnstileToken);
 public sealed record LoginRequest(string? Account, string? Password);
-public sealed record ProfileRequest(string? Username, string? Region);
+public sealed record ProfileRequest(string? Username, string? Region, string? AvatarId);
 public sealed record CompleteGameRequest(int Duration, int Score, int Hits, int Shots, int MaxCombo);
 public sealed record PurchaseRequest(string? Category, string? ItemId);
-public sealed record PlayerResponse(string Id, string Account, string Username, string Region, int Coins, int BestScore, int TotalHits, int TotalGamesPlayed, Dictionary<string, string> Equipped);
+public sealed record PlayerResponse(string Id, string Account, string Username, string Region, string AvatarId, int Coins, int BestScore, int TotalHits, int TotalGamesPlayed, Dictionary<string, string> Equipped);
 public sealed record InventoryResponse(int Coins, Dictionary<string, List<string>> Owned, Dictionary<string, string> Equipped);
 public sealed record LeaderboardEntry(string Username, string Region, int Score, string Avatar, bool IsCurrentPlayer);
 public sealed record TurnstileResponse(bool Success, string? Hostname);

@@ -4,6 +4,7 @@ public class ApplicationUser : IdentityUser
 {
     public string DisplayName { get; set; } = string.Empty;
     public string Region { get; set; } = string.Empty;
+    public string AvatarId { get; set; } = "rookie";
     public int Coins { get; set; } = 500;
     public int BestScore { get; set; }
     public int TotalHits { get; set; }
