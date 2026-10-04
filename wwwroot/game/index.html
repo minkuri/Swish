@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet">
-    <link rel="stylesheet" href="/game/style.css?v=11">
+    <link rel="stylesheet" href="/game/style.css?v=12">
 </head>
 <body>
     <div class="app-shell">
@@ -31,7 +31,7 @@
             登入 <span>→</span>
             </button>
             <button class="profile" id="profileButton" type="button" aria-label="編輯個人資料">
-                <span class="avatar">🏀</span>
+                <img class="avatar" id="playerAvatar" src="/game/avatars/rookie.svg" alt="">
                 <span class="profile-copy">
                     <b id="playerName">街頭新秀</b>
                     <small>Lv. 01 · 新手球員</small>
@@ -284,6 +284,11 @@
             <div class="eyebrow">PLAYER PROFILE</div>
             <h2 id="profileTitle">編輯球員資料</h2>
             <form id="profileForm">
+                <div class="avatar-picker">
+                    <span class="avatar-picker-label">選擇你的球員頭像</span>
+                    <div class="avatar-choices" id="avatarChoices" role="group" aria-label="選擇球員頭像"></div>
+                    <input name="avatarId" type="hidden" value="rookie">
+                </div>
                 <label>
                     使用者名稱（可修改）<input name="username" maxlength="24" required>
                 </label>
@@ -324,6 +329,6 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="runtime-error" id="runtimeError" role="alert" hidden></div>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onSwishTurnstileReady&amp;render=explicit" async defer></script>
-    <script src="/game/game.js?v=14"></script>
+    <script src="/game/game.js?v=15"></script>
 </body>
 </html>
