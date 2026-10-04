@@ -694,7 +694,7 @@ button:focus-visible {
     overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color: #56614d transparent;
-    padding-right: 3px;
+    padding-right: 2px;
     min-height: 0;
     flex: 1;
 }
@@ -714,11 +714,12 @@ button:focus-visible {
     color: var(--text);
     font: inherit;
     transition: border 0.18s, background 0.18s, transform 0.18s;
+    margin-top: 2px;
 }
 
 .shop-item:hover {
-    border-color: #d1f36a55;
-    transform: translateY(-1px);
+    border-color: #bfff0091;
+    transform: translateY(-2px);
 }
 
 .shop-item.selected {
@@ -1302,6 +1303,7 @@ button:focus-visible {
 .avatar-choice {
     aspect-ratio: 1;
     padding: 3px;
+    width: fit-content;
     border: 2px solid transparent;
     border-radius: 15px;
     background: #28332d;
@@ -1310,6 +1312,7 @@ button:focus-visible {
 }
 
 .avatar-choice:hover {
+    border-color: #bfff0091;
     transform: translateY(-2px);
 }
 
