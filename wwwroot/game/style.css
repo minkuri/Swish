@@ -131,11 +131,10 @@ button {
 .avatar {
     width: 39px;
     height: 39px;
+    flex: none;
     border-radius: 13px;
-    background: linear-gradient(145deg, #e0f184, #91b84d);
-    display: grid;
-    place-items: center;
-    font-size: 23px;
+    object-fit: cover;
+    background: #29342d;
 }
 
 .profile-copy {
@@ -371,11 +370,12 @@ button {
 .rank-avatar {
     width: 29px;
     height: 29px;
+    flex: none;
     display: grid;
     place-items: center;
     background: #29342d;
     border-radius: 9px;
-    font-size: 17.25px;
+    object-fit: cover;
 }
 
 .rank-name {
@@ -1280,6 +1280,49 @@ button:focus-visible {
 
 .profile-card {
     width: min(100%, 390px);
+}
+
+.avatar-picker {
+    display: grid;
+    gap: 10px;
+}
+
+.avatar-picker-label {
+    color: #c0c9bb;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.avatar-choices {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.avatar-choice {
+    aspect-ratio: 1;
+    padding: 3px;
+    border: 2px solid transparent;
+    border-radius: 15px;
+    background: #28332d;
+    cursor: pointer;
+    transition: border-color 0.18s, transform 0.18s;
+}
+
+.avatar-choice:hover {
+    transform: translateY(-2px);
+}
+
+.avatar-choice[aria-pressed="true"] {
+    border-color: var(--lime);
+}
+
+.avatar-choice img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    object-fit: cover;
 }
 
 @media (max-width: 760px) {

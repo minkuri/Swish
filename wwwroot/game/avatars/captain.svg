@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#ffbf70"/><stop offset="1" stop-color="#bc543e"/></linearGradient>
+    <linearGradient id="shirt" x2="0" y2="1"><stop stop-color="#263c46"/><stop offset="1" stop-color="#14272e"/></linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <path d="M13 128c5-27 23-40 51-40s46 13 51 40" fill="url(#shirt)"/>
+  <path d="M55 83h18v19H55z" fill="#85503c"/>
+  <ellipse cx="64" cy="57" rx="30" ry="34" fill="#a9684d"/>
+  <path d="M34 57c-5-29 7-45 31-45 23 0 36 18 29 44l-8-4-5-20c-12 8-26 10-43 8l1 17z" fill="#1f2526"/>
+  <path d="M42 57c2 19 10 32 22 32 15 0 23-14 23-33-9-2-16-7-22-15-7 8-15 13-23 16z" fill="#b87758"/>
+  <path d="M46 58h11m14 0h11" stroke="#202a2c" stroke-width="4" stroke-linecap="round"/>
+  <path d="M58 74q6 4 12 0" fill="none" stroke="#713e35" stroke-width="3" stroke-linecap="round"/>
+  <path d="M40 45c7-13 17-20 29-19 9 1 16 6 20 14" fill="none" stroke="#e6c46c" stroke-width="5" stroke-linecap="round"/>
+  <path d="M58 91l6 10 6-10" fill="#f5a44e"/>
+  <circle cx="64" cy="111" r="3" fill="#f5a44e"/>
+</svg>

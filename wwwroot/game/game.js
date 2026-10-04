@@ -17,6 +17,25 @@ const safeStorage = {
     }
 };
 
+const AVATARS = [
+    { id: "rookie", name: "街頭新秀" },
+    { id: "captain", name: "球場隊長" },
+    { id: "lightning", name: "閃電射手" },
+    { id: "ace", name: "王牌球員" },
+    { id: "night", name: "夜行球手" },
+];
+const AVATAR_BY_ID = Object.fromEntries(AVATARS.map((avatar) => [avatar.id, avatar]));
+
+function savedAvatarId() {
+    const id = safeStorage.get("swish_avatar", "rookie");
+    return AVATAR_BY_ID[id] ? id : "rookie";
+}
+
+function avatarUrl(id) {
+    const avatar = AVATAR_BY_ID[id] || AVATAR_BY_ID.rookie;
+    return "/game/avatars/" + avatar.id + ".svg";
+}
+
 window.addEventListener("error", (event) => {
     if (!event.message) return; // ignore external resource load failures
     const notice = document.getElementById("runtimeError");
@@ -322,6 +341,7 @@ renderShop();
 /* 登入、玩家檔案、賽制排行榜 API */
 let authMode = "login";
 let currentPlayer = null;
+let selectedAvatarId = savedAvatarId();
 let authenticated = false;
 let turnstileToken = "";
 let leaderDuration = 30;
@@ -414,6 +434,9 @@ function applyPlayer(player) {
     currentPlayer = player;
     document.getElementById("playerName").textContent =
         player.username || player.displayName || safeStorage.get("swish_username") || "球員";
+    selectedAvatarId = AVATAR_BY_ID[player.avatarId] ? player.avatarId : savedAvatarId();
+    document.getElementById("playerAvatar").src = avatarUrl(selectedAvatarId);
+    safeStorage.set("swish_avatar", selectedAvatarId);
     if (Number.isFinite(+player.coins)) coins = +player.coins;
     if (Number.isFinite(+player.bestScore)) best = +player.bestScore;
     if (Number.isFinite(+player.totalHits)) totalHits = +player.totalHits;
@@ -485,16 +508,39 @@ document.getElementById("profileButton").addEventListener("click", () => {
     const form = document.getElementById("profileForm");
     form.elements.username.value = currentPlayer?.username || document.getElementById("playerName").textContent;
     form.elements.region.value = currentPlayer?.region || "";
+    selectedAvatarId = AVATAR_BY_ID[currentPlayer?.avatarId] ? currentPlayer.avatarId : savedAvatarId();
+    form.elements.avatarId.value = selectedAvatarId;
+    renderAvatarChoices();
     profileScreen.hidden = false;
 });
 document.getElementById("closeProfile").addEventListener("click", () => { profileScreen.hidden = true; });
+function renderAvatarChoices() {
+    const choices = document.getElementById("avatarChoices");
+    choices.innerHTML = AVATARS.map((avatar) => `
+        <button class="avatar-choice" type="button" data-avatar-id="${avatar.id}"
+                aria-label="${avatar.name}" aria-pressed="${selectedAvatarId === avatar.id}">
+            <img src="${avatarUrl(avatar.id)}" alt="">
+        </button>
+    `).join("");
+}
+document.getElementById("avatarChoices").addEventListener("click", (event) => {
+    const choice = event.target.closest("[data-avatar-id]");
+    if (!choice || !AVATAR_BY_ID[choice.dataset.avatarId]) return;
+    selectedAvatarId = choice.dataset.avatarId;
+    document.querySelectorAll(".avatar-choice").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button === choice));
+    });
+    document.querySelector('#profileForm input[name="avatarId"]').value = selectedAvatarId;
+});
 document.getElementById("profileForm").addEventListener("submit", async (event) => {
     event.preventDefault(); const form = new FormData(event.currentTarget);
-    const update = { username: form.get("username"), region: form.get("region") };
+    const update = { username: form.get("username"), region: form.get("region"), avatarId: form.get("avatarId") };
     try {
         if (authenticated) currentPlayer = await api("/api/player/profile", { method: "PATCH", body: JSON.stringify(update) });
         else currentPlayer = { ...(currentPlayer || {}), ...update };
-        try { safeStorage.set("swish_username", update.username); safeStorage.set("swish_region", update.region); } catch (_) {}
+        safeStorage.set("swish_username", update.username);
+        safeStorage.set("swish_region", update.region);
+        safeStorage.set("swish_avatar", update.avatarId);
         applyPlayer(currentPlayer); document.getElementById("profileMessage").textContent = "資料已更新。";
     } catch (error) { document.getElementById("profileMessage").textContent = error.message; }
 });
@@ -522,14 +568,14 @@ async function loadLeaderboard() {
                 const rowClass = player.isCurrentPlayer ? " you" : "";
                 const rank = String(index + 1).padStart(2, "0");
                 const name = escapeText(player.username || "球員");
-                const avatar = escapeText(player.avatar || "🏀");
+                const avatar = avatarUrl(player.avatar);
                 const region = escapeText(player.region || "");
                 const score = Number(player.score || 0).toLocaleString();
 
                 return `
                     <div class="rank-row${rowClass}">
                         <span class="rank ${rankClass}">${rank}</span>
-                        <span class="rank-avatar">${avatar}</span>
+                        <img class="rank-avatar" src="${avatar}" alt="">
                         <span class="rank-name">
                             <b>${name}</b>
                             <small>${region}</small>

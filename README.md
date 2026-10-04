@@ -12,6 +12,7 @@ Swish 是一個由多平台多模型 AI 協作，利用 ASP.NET Core 提供前�
 API 和遊戲頁由同一個 ASP.NET Core 網站提供。註冊**增加 Cloudflare Turnstile 人機驗證**。
 ## 資料庫
 利用 Neon 平台建置 PostgreSQL 資料庫。Entity Framework Core 負責 C# 程式與 PostgreSQL 之間的資料存取，Npgsql 為連接套件。
+玩家頭像使用固定的 `AvatarId` 儲存於 `AspNetUsers`，圖檔放在 `wwwroot/game/avatars`；個人資料 API 只接受預先定義的頭像 ID，不接收使用者上傳檔案。
 ## Render 部署
 Render 使用專案根目錄的 Dockerfile 建置網站。render.yaml 設定服務使用 Docker、健康檢查路徑，以及部署環境需要的變數名稱。
 
