@@ -101,14 +101,28 @@ const COURTS = {
 };
 
 const BALLS = {
-    classic: { name: "經典橘球", cost: 0, main: "#d2500f", light: "#ffb56b", line: "#5a1e05" },
-    fire:    { name: "火焰球",   cost: 250, main: "#c21414", light: "#ff8a3d", line: "#3a0a0a" },
-    galaxy:  { name: "銀河球",   cost: 450, main: "#3a1c7a", light: "#a78bfa", line: "#1a0a3a" },
-    gold:    { name: "黃金球",   cost: 700, main: "#b8860b", light: "#ffe38a", line: "#4a3200" },
+    classic: { name: "經典籃球", cost: 0, main: "#d2500f", light: "#ffb56b", line: "#5a1e05", pattern: "basketball" },
+    soccer:    { name: "足球",   cost: 250, main: "#f4f4f0", light: "#ffffff", line: "#202020", pattern: "soccer" },
+    volleyball:  { name: "排球",   cost: 450, main: "#fff8dc", light: "#ffffff", line: "#277bc0", pattern: "volleyball" },
+    discoball:    { name: "Disco球",   cost: 700, main: "#6750a4", light: "#fff2a8", line: "#ffffff", pattern: "discoball" },
 };
 
+const BALL_SVG_PATHS = {
+    classic: "/game/shop/basketball.svg",
+    soccer: "/game/shop/soccer.svg",
+    volleyball: "/game/shop/volleyball.svg",
+    discoball: "/game/shop/discoball.svg",
+};
+const BALL_SVG_IMAGES = Object.fromEntries(
+    Object.entries(BALL_SVG_PATHS).map(([id, src]) => {
+        const image = new Image();
+        image.src = src;
+        return [id, image];
+    })
+);
+
 const HOOPS = {
-    classic: { name: "經典橘框", cost: 0, rim: "#ff7a2e", net: "rgba(255,255,255,0.85)" },
+    classic: { name: "經典籃框", cost: 0, rim: "#ff7a2e", net: "rgba(255,255,255,0.85)" },
     fire:    { name: "火焰框",   cost: 300, rim: "#ff3b3b", net: "rgba(255,200,150,0.85)" },
     crystal: { name: "水晶框",   cost: 550, rim: "#5fd4ff", net: "rgba(200,240,255,0.9)" },
     space:   { name: "星空框",   cost: 900, rim: "#b06bff", net: "rgba(220,180,255,0.9)" },
@@ -258,13 +272,13 @@ function renderShop() {
             galaxy: ["🌌", "court-galaxy", "星雲地板・宇宙球場"],
         },
         balls: {
-            classic: ["🏀", "ball-classic", "標準手感・經典橘球"],
-            fire: ["🔥", "ball-fire", "炙熱火焰・燃燒特效"],
-            galaxy: ["🪐", "ball-galaxy", "星際旋紋・銀河球"],
-            gold: ["✨", "ball-gold", "鍍金收藏・尊爵球"],
+            classic: ["🏀", "ball-classic", "標準手感・經典籃球"],
+            soccer: ["⚽️", "ball-soccer", "標準足球"],
+            volleyball: ["🏐", "ball-volleyball", "標準排球"],
+            discoball: ["🪩", "ball-discoball", "璀璨奪目・尊爵球"],
         },
         hoops: {
-            classic: ["⭕", "hoop-classic", "標準橘框・白色球網"],
+            classic: ["⭕", "hoop-classic", "標準籃框・白色球網"],
             fire: ["🔥", "hoop-fire", "烈焰紅框・夕陽球網"],
             crystal: ["💎", "hoop-crystal", "冰晶藍框・透光球網"],
             space: ["🌠", "hoop-space", "星光紫框・幻彩球網"],
@@ -281,10 +295,13 @@ function renderShop() {
             ? (equipped ? "裝備中" : "已擁有")
             : "🪙 " + item.cost.toLocaleString();
         const action = equipped ? "✓ 使用中" : owned ? "裝備" : "解鎖";
+        const artContent = activeTab === "balls"
+            ? `<img src="${BALL_SVG_PATHS[id]}" alt="${item.name}" draggable="false" style="display:block;position:relative;z-index:1;width:100%;height:100%;padding:4px;object-fit:contain;">`
+            : `<span class="art-emoji">${visual[0]}</span>`;
 
         el.innerHTML = `
             <span class="shop-art ${visual[1]}">
-                <span class="art-emoji">${visual[0]}</span>
+                ${artContent}
             </span>
             <span class="shop-item-info">
                 <span class="shop-item-name">${item.name}</span>
@@ -1226,37 +1243,26 @@ function drawNet() {
    繪圖：球、瞄準線、特效、HUD
    ========================================================= */
 function drawBall(cx, cy, r, rot) {
-    const skin = BALLS[selected.balls] || BALLS.classic;
+    const ballId = BALL_SVG_IMAGES[selected.balls] ? selected.balls : "classic";
+    const image = BALL_SVG_IMAGES[ballId];
 
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(rot);
 
-    const grad = ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.1, 0, 0, r);
-    grad.addColorStop(0, skin.light);
-    grad.addColorStop(1, skin.main);
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 球的紋路
-    ctx.strokeStyle = skin.line;
-    ctx.lineWidth = Math.max(1.2, r * 0.09);
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.moveTo(-r, 0);
-    ctx.lineTo(r, 0);
-    ctx.moveTo(0, -r);
-    ctx.lineTo(0, r);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(-r * 1.2, 0, r * 0.98, -0.85, 0.85);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(r * 1.2, 0, r * 0.98, Math.PI - 0.85, Math.PI + 0.85);
-    ctx.stroke();
+    if (image.complete && image.naturalWidth > 0) {
+        ctx.drawImage(image, -r, -r, r * 2, r * 2);
+    } else {
+        // SVG 載入完成前先顯示對應球款的底色。
+        const skin = BALLS[ballId] || BALLS.classic;
+        const gradient = ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.1, 0, 0, r);
+        gradient.addColorStop(0, skin.light);
+        gradient.addColorStop(1, skin.main);
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+    }
 
     ctx.restore();
 }
@@ -1265,15 +1271,25 @@ function drawBallWithShadow() {
     const pop = ball.state === "ready" ? 0.6 + 0.4 * ball.pop : 1;
 
     // 地上的影子：球越高，影子越淡越小
-    const s = project(ball.x, 0, ball.z);
+    const shadow = project(ball.x, 0, ball.z);
     const height = Math.max(0, ball.y - BR);
-    ctx.fillStyle = "rgba(0, 0, 0, " + Math.max(0.08, 0.35 - height * 0.06) + ")";
+
+    ctx.fillStyle =
+        "rgba(0, 0, 0, " + Math.max(0.08, 0.35 - height * 0.06) + ")";
     ctx.beginPath();
-    ctx.ellipse(s.x, s.y, BR * s.k * 1.1, BR * s.k * 0.35, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+        shadow.x,
+        shadow.y,
+        BR * shadow.k * 1.1,
+        BR * shadow.k * 0.35,
+        0,
+        0,
+        Math.PI * 2
+    );
     ctx.fill();
 
-    const p = project(ball.x, ball.y, ball.z);
-    drawBall(p.x, p.y, BR * p.k * pop, ball.rot);
+    const position = project(ball.x, ball.y, ball.z);
+    drawBall(position.x, position.y, BR * position.k * pop * 1.4, ball.rot);
 }
 
 // 只顯示出手後最初的一小段軌跡，讓玩家看到方向，但不直接告訴他會不會進

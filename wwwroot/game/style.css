@@ -1,7 +1,7 @@
 :root {
     box-sizing: border-box;
     color-scheme: dark;
-    --bg: #101715;
+    --bg: #060f0d;
     --panel: #19211e;
     --panel2: #202a25;
     --line: rgba(236, 242, 225, 0.09);
@@ -53,11 +53,11 @@ button {
     height: 76px;
     flex: none;
     padding: 0 3.2vw;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 3px outset var(--line);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(16, 23, 21, 0.86);
+    background: #0c0f0c;
 }
 
 .brand {
@@ -155,7 +155,7 @@ button {
 .coin-pill {
     margin-left: 12px;
     padding: 9px 13px;
-    border: 1px solid #d1f36a32;
+    border: 3px outset #d1f36a32;
     background: #d1f36a0c;
     border-radius: 20px;
     color: var(--lime);
@@ -221,7 +221,7 @@ button {
 
 .panel {
     background: linear-gradient(140deg, #1b2420, #171f1c);
-    border: 1px solid var(--line);
+    border: 3px outset var(--line);
     border-radius: 16px;
     padding: 16px;
 }
@@ -341,7 +341,7 @@ button {
     align-items: center;
     gap: 9px;
     padding: 9px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+    border-bottom: 3px outset rgba(255, 255, 255, 0.045);
 }
 
 .rank-row:last-of-type {
@@ -402,7 +402,7 @@ button {
     padding: 9px 7px;
     border-radius: 9px;
     background: #d1f36a0c;
-    border: 1px solid #d1f36a20;
+    border: 3px outset #d1f36a20;
 }
 
 .you strong {
@@ -416,13 +416,17 @@ button {
     line-height: 1.5;
 }
 
-.rail-footer {
+.site-footer {
     margin-top: auto;
-    padding: 10px 3px 0;
+    height: 100px;
+    padding: 3px 10px;
     display: flex;
-    justify-content: space-between;
+    border-top: 3px outset var(--line);
+    justify-content: flex-end;
+    align-items: flex-end;
     color: #647063;
-    font-size: 9.2px;
+    background-color: #0c0f0c;
+    font-size: 12px;
     letter-spacing: 0.08em;
 }
 
@@ -450,7 +454,7 @@ button {
     font-size: 10.35px;
     color: #bbc3b5;
     padding: 8px 10px;
-    border: 1px solid var(--line);
+    border: 3px outset #c6d7c67f;
     border-radius: 20px;
 }
 
@@ -465,7 +469,7 @@ button {
     background: #18211e;
     border-radius: 20px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    border: 3px outset rgba(255, 255, 255, 0.09);
     box-shadow: 0 22px 60px #0004;
 }
 
@@ -496,7 +500,7 @@ canvas {
     font-size: 10.35px;
     letter-spacing: 0.14em;
     color: var(--lime);
-    border: 1px solid #d1f36a35;
+    border: 3px outset #d1f36a35;
     border-radius: 20px;
     padding: 7px 11px;
     margin-bottom: 10px;
@@ -564,7 +568,7 @@ canvas {
 }
 
 button:focus-visible {
-    outline: 2px solid white;
+    outline: 2px outset white;
     outline-offset: 3px;
 }
 
@@ -620,7 +624,7 @@ button:focus-visible {
     flex-direction: column;
     padding: 17px;
     background: linear-gradient(150deg, #1b2420, #171e1b);
-    border: 1px solid var(--line);
+    border: 2px outset var(--line);
     border-radius: 17px;
 }
 
@@ -650,7 +654,7 @@ button:focus-visible {
     padding: 10px 12px;
     border-radius: 10px;
     background: #d1f36a0d;
-    border: 1px solid #d1f36a20;
+    border: 2px outset #d1f36a20;
     font-size: 11.5px;
     color: #b4bead;
 }
@@ -707,7 +711,7 @@ button:focus-visible {
     gap: 10px;
     padding: 8px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 2px outset rgba(255, 255, 255, 0.07);
     background: rgba(255, 255, 255, 0.025);
     cursor: pointer;
     text-align: left;
@@ -846,7 +850,7 @@ button:focus-visible {
     font-size: 9.2px;
     color: #9da99a;
     padding: 6px 7px;
-    border: 1px solid #ffffff14;
+    border: 2px inset #ffffff14;
     border-radius: 7px;
     white-space: nowrap;
 }
@@ -995,7 +999,7 @@ button:focus-visible {
 
     .welcome,
     .leaderboard,
-    .rail-footer {
+    .site-footer {
         grid-column: 1 / -1;
     }
 
@@ -1003,7 +1007,7 @@ button:focus-visible {
         font-size: 29.9px;
     }
 
-    .rail-footer {
+    .site-footer {
         margin-top: 0;
     }
 
@@ -1065,7 +1069,7 @@ button:focus-visible {
 
     .welcome,
     .leaderboard,
-    .rail-footer {
+    .site-footer {
         grid-column: auto;
     }
 
@@ -1098,7 +1102,7 @@ button:focus-visible {
     width: 100%;
     gap: 8px;
     padding: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 2px outset rgba(255, 255, 255, 0.08);
     background: #111815;
     border-radius: 10px;
 }
@@ -1142,7 +1146,7 @@ button:focus-visible {
 }
 
 .leader-empty {
-    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border: 2px dashed rgba(255, 255, 255, 0.12);
     border-radius: 9px;
     padding: 14px 10px;
     color: #899488;
@@ -1178,7 +1182,7 @@ button:focus-visible {
     overflow: auto;
     padding: 29px;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 2px outset rgba(255, 255, 255, 0.1);
     background: linear-gradient(150deg, #202a24, #141b17);
     box-shadow: 0 28px 90px #0009;
 }
@@ -1225,7 +1229,7 @@ button:focus-visible {
     padding: 0 12px;
     color: var(--text);
     background: #111815;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 2px outset rgba(255, 255, 255, 0.1);
     border-radius: 9px;
     font: inherit;
     font-size: 13.8px;
@@ -1337,7 +1341,7 @@ button:focus-visible {
     aspect-ratio: 1;
     padding: 3px;
     width: fit-content;
-    border: 2px solid transparent;
+    border: 2px outset transparent;
     border-radius: 15px;
     background: #28332d;
     cursor: pointer;
@@ -1365,7 +1369,7 @@ button:focus-visible {
     margin-left: auto;
     margin-right: 12px;
     padding: 9px 15px;
-    border: 1px solid #d1f36a55;
+    border: 1px outset #d1f36a55;
     border-radius: 9px;
     background: #d1f36a;
     color: #182014;
@@ -1390,7 +1394,7 @@ button:focus-visible {
     right: 16px;
     bottom: 16px;
     padding: 13px 16px;
-    border: 1px solid #ff8060;
+    border: 2px outset #ff8060;
     border-radius: 10px;
     background: #401c17;
     color: #ffe5dc;
@@ -1422,7 +1426,7 @@ button,
     bottom: 22px;
     max-width: min(92vw, 420px);
     padding: 11px 16px;
-    border: 1px solid rgba(209, 243, 106, 0.35);
+    border: 2px outset rgba(209, 243, 106, 0.35);
     border-radius: 12px;
     background: #202a24;
     color: var(--text);
